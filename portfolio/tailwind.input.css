@@ -1,0 +1,32 @@
+@import "tailwindcss";
+@source "./src/**/*.ts";
+@source "./src/**/*.html";
+
+/* Force responsive variants not auto-detected from Angular template literals */
+@source inline("{sm,md,lg,xl}:{flex,hidden,grid,block,inline-flex,flex-col,flex-row,items-center,items-start,justify-between,gap-2,gap-3,gap-4,gap-6,gap-8,w-auto,text-xl,text-4xl,text-5xl,text-7xl,text-lg,grid-cols-2,grid-cols-3,grid-cols-4,p-8,px-6,py-12,py-24,mt-0,mt-1,mb-0}");
+@source inline("md:{flex,hidden,grid,block,flex-col,flex-row,items-center,items-start,items-end,justify-between,justify-center,gap-2,gap-3,gap-4,gap-6,gap-8,w-auto,text-xl,text-4xl,text-5xl,text-7xl,text-lg,grid-cols-2,grid-cols-3,grid-cols-4,p-5,p-8,px-6,py-3,py-4,mt-0,mt-1,space-y-0}");
+@source inline("sm:{flex,hidden,flex-col,flex-row,items-center,gap-2,gap-3,gap-4,w-auto,h-auto,grid-cols-2}");
+
+@theme {
+  /* Colors */
+  --color-primary: #6366f1;
+  --color-primary-dark: #4f46e5;
+  --color-primary-light: #818cf8;
+  --color-accent: #f59e0b;
+  --color-accent-dark: #d97706;
+  --color-surface: #0f172a;
+  --color-surface-alt: #1e293b;
+  --color-surface-card: #1e293b;
+
+  /* Typography */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+  /* Shape */
+  --radius-card: 1rem;
+  --radius-btn: 0.5rem;
+
+  /* Shadows */
+  --shadow-glow: 0 0 40px color-mix(in srgb, var(--color-primary) 25%, transparent);
+  --shadow-glow-accent: 0 0 40px color-mix(in srgb, var(--color-accent) 25%, transparent);
+}
