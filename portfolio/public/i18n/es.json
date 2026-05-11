@@ -1,0 +1,173 @@
+{
+  "NAV": {
+    "HOME": "Inicio",
+    "PROJECTS": "Proyectos",
+    "BLOG": "Blog",
+    "CV": "CV",
+    "CHAT_CTA": "Chat con mi CV"
+  },
+  "FOOTER": {
+    "MADE_WITH": "Hecho con Angular 21 + Claude API."
+  },
+  "HOME": {
+    "BADGE": "Senior Software Engineer · Dublín",
+    "GREETING": "Hola, soy",
+    "DESCRIPTION": "Ingeniero de software con <strong>+15 años de experiencia</strong> en Java/Spring, Angular y arquitecturas cloud. Actualmente liderando un equipo de 10+ personas distribuido por todo el mundo en <strong>My Compliance Office</strong>.",
+    "BTN_PROJECTS": "Ver proyectos",
+    "BTN_CHAT": "Chat con mi CV ✨",
+    "SCROLL": "Scroll",
+    "SKILLS_TITLE": "Stack Tecnológico",
+    "SKILLS_SUBTITLE": "+15 años construyendo con estas tecnologías en proyectos reales.",
+    "STATS_TITLE": "Trayectoria",
+    "STATS": {
+      "YEARS_VALUE": "15+",
+      "YEARS_LABEL": "Años de experiencia",
+      "TEAM_VALUE": "10+",
+      "TEAM_LABEL": "Personas en el equipo actual",
+      "EVENTS_VALUE": "500K+",
+      "EVENTS_LABEL": "Eventos en StatsForBetting.com"
+    },
+    "AI_BADGE": "Potenciado por Claude AI",
+    "AI_TITLE": "Habla con mi CV directamente",
+    "AI_DESC": "Una IA entrenada con mi experiencia real en MCO, ALTEN, CGI y mis proyectos personales. Pregúntame lo que quieras sobre mi perfil profesional.",
+    "AI_BTN": "Iniciar conversación →"
+  },
+  "PROJECTS": {
+    "TITLE": "Proyectos",
+    "SUBTITLE": "Algunos de los proyectos en los que he trabajado — desde apps web hasta sistemas empresariales.",
+    "BADGE_FEATURED": "Destacado",
+    "LINK_GITHUB": "GitHub →",
+    "LINK_DEMO": "Demo →",
+    "ITEMS": {
+      "STATS_TITLE": "StatsForBetting.com",
+      "STATS_DESC": "Herramienta de estadísticas de fútbol europeo con más de 500,000 eventos (goles, minutos, tarjetas). Stats totalmente personalizables por partido y usuario.",
+      "PORTFOLIO_TITLE": "Portfolio IA — Este sitio",
+      "PORTFOLIO_DESC": "Portfolio personal con chat basado en Claude API entrenado con mi CV real, animaciones GSAP y SSR con Angular 21.",
+      "MCO_TITLE": "MCO — Conduct Risk Platform",
+      "MCO_DESC": "Plataforma SaaS de gestión de riesgo de conducta: Personal Trade Compliance, Third Party Risk Management y Trade Surveillance.",
+      "PSA_TITLE": "PSA Peugeot — Web Apps",
+      "PSA_DESC": "Aplicaciones web empresariales sobre Tomcat con servicios SOAP & REST. Proyecto en ALTEN para cliente PSA Peugeot.",
+      "PRISA_TITLE": "Prisacom — Pasarela de pago",
+      "PRISA_DESC": "Desarrollo de pasarela de pago (PayPal, Worldpay, BBVA TPV) y módulos de cesta de compra, checkout e historial de pedidos."
+    }
+  },
+  "BLOG": {
+    "TITLE": "Blog",
+    "SUBTITLE": "Artículos sobre desarrollo, IA y lo que aprendo en el camino.",
+    "EMPTY_TITLE": "El blog está en camino",
+    "EMPTY_DESC": "Los posts aparecerán aquí. Añade archivos .md en",
+    "MIN_READ": "min",
+    "MIN_READ_POST": "min de lectura",
+    "BACK": "← Blog",
+    "NOT_FOUND": "Post no encontrado.",
+    "FEATURED": "DESTACADO",
+    "READ_MORE": "Leer más",
+    "AUTHOR_ROLE": "Senior Software Engineer · Dublín",
+    "ARTICLES": "artículo",
+    "ARTICLES_PLURAL": "artículos"
+  },
+  "CV": {
+    "TITLE": "Senior Software Engineer & Scrum Team Manager",
+    "SUMMARY": "Ingeniero de software con más de 15 años de experiencia desarrollando aplicaciones empresariales con Java/Spring y liderando equipos ágiles. Actualmente en <strong>My Compliance Office</strong> (Dublín), gestionando un equipo de 10+ personas.",
+    "DOWNLOAD_PDF": "Descargar PDF",
+    "SECTION_EXPERIENCE": "Experiencia",
+    "SECTION_SKILLS": "Habilidades Técnicas",
+    "SECTION_LANGUAGES": "Idiomas",
+    "SECTION_EDUCATION": "Formación",
+    "SECTION_BOOKS": "📚 Libros de referencia",
+    "SECTION_COURSES": "🎓 Cursos realizados",
+    "EXPERIENCE": [
+      {
+        "role": "Senior Software Engineer & Scrum Team Manager",
+        "company": "My Compliance Office (MCO)",
+        "location": "Dublín, Irlanda",
+        "period": "Sep 2016 – presente",
+        "description": "MCO ofrece software de Riesgo de Conducta en una única plataforma que integra Cumplimiento de Operaciones Personales, Gestión de Terceros y Vigilancia de Operaciones.",
+        "highlights": [
+          "Liderazgo y gestión de un equipo de más de 10 ingenieros: inspirar, mentorizar y crear un entorno productivo donde el equipo es dueño del producto",
+          "Coordinación de sprints, reuniones de retrospectiva y dailys como Scrum Master",
+          "Coaching del equipo en metodología Agile y adopción de buenas prácticas",
+          "Diseño de diagramas UML para nuevas funcionalidades y propuesta de soluciones arquitectónicas",
+          "Estimación de tiempos de desarrollo; colaboración con el PO en la gestión del backlog",
+          "Desarrollo: Java 8, Oracle, Spring, Bootstrap 3, Maven 3, Angular 12",
+          "Construcción y mantenimiento de servicios web REST que securizan y enrutan peticiones entre servicios",
+          "Testing con JUnit, Mockito y Selenium",
+          "Mentorización de nuevos desarrolladores; redacción de documentación y guías de desarrollo"
+        ]
+      },
+      {
+        "role": "Proyecto Personal — Desarrollador Full Stack",
+        "company": "StatsForBetting.com",
+        "location": "Remoto",
+        "period": "Ene 2015 – presente",
+        "description": "Herramienta de estadísticas de fútbol europeo con más de 500.000 eventos (goles, minutos, tarjetas). Stats totalmente personalizables por partido.",
+        "highlights": [
+          "Diseño responsive total y despliegue completo de la aplicación web",
+          "Stack: Spring 4 MVC, Spring Security, jQuery, JSTL, Hibernate, MySQL, Maven, i18n, GoogleChart, Bootstrap, Jsoup, AJAX"
+        ]
+      },
+      {
+        "role": "Ingeniero de Software — 3 Proyectos",
+        "company": "ALTEN",
+        "location": "Madrid, España",
+        "period": "Nov 2011 – Dic 2014",
+        "description": null,
+        "highlights": [
+          "PSA Peugeot (Mar 2013 – Dic 2014): Aplicaciones web en Tomcat con J2EE, Oracle, Spring 3, Bootstrap 3, Maven, jQuery, AJAX; servicios SOAP & REST; corrección de errores y documentación",
+          "Prisacom I+D+I / PRISA (Jun 2012 – Mar 2013): Desarrollo de pasarela de pago (PayPal, Worldpay, BBVA TPV); cesta de compra, checkout, historial de pedidos; despliegue en Tomcat y JBoss",
+          "Telefónica I+D+I (Nov 2011 – Jun 2012): Plataforma de reserva de entradas para conciertos y streaming en directo; J2EE, EJB, Struts 2, Hibernate, RESTful; metodología Scrum"
+        ]
+      },
+      {
+        "role": "Ingeniero de Software",
+        "company": "CGI (Orange)",
+        "location": "Madrid, España",
+        "period": "Jun 2009 – Nov 2011",
+        "description": "Proyecto principal: sistema de cargos por roaming en llamadas desarrollado en Java, C y shell scripts.",
+        "highlights": [
+          "Desarrollo de backend con Java y Oracle",
+          "Aplicaciones web en GlassFish: J2EE, MySQL, Oracle, Unix, Hibernate, EJB 3.0, AJAX",
+          "Redacción de documentación y tutoriales para desarrolladores e internos"
+        ]
+      }
+    ],
+    "SKILL_CATEGORIES": [
+      { "name": "Backend", "skills": ["Java 8", "J2EE", "Spring MVC", "Spring Security", "Hibernate", "EJB", "Maven", "Struts 2"] },
+      { "name": "Web Services & APIs", "skills": ["REST", "SOAP", "JSON", "XML", "JSTL", "AJAX"] },
+      { "name": "Frontend", "skills": ["Angular 12", "jQuery", "Bootstrap", "HTML5", "CSS3", "GoogleChart"] },
+      { "name": "BBDD & Servidores", "skills": ["MySQL", "Oracle", "Tomcat", "JBoss", "GlassFish"] },
+      { "name": "Testing & Herramientas", "skills": ["JUnit", "Mockito", "Selenium", "Git", "SVN", "UML"] },
+      { "name": "Metodologías", "skills": ["Scrum", "Agile", "TDD", "Liderazgo de equipos", "Mentoring"] }
+    ],
+    "LANGUAGES": [
+      { "language": "Español", "level": "Nativo" },
+      { "language": "Inglés", "level": "Fluido" },
+      { "language": "Italiano", "level": "Competente" }
+    ],
+    "EDUCATION": [
+      { "degree": "Máster en Informática", "institution": "Universidad de Málaga", "location": "España", "year": "2008–2009" },
+      { "degree": "Año de intercambio — Informática", "institution": "Politecnico Leonardo da Vinci", "location": "Milán, Italia", "year": "2007–2008" },
+      { "degree": "Ingeniería Informática (5 años)", "institution": "Universidad de Málaga", "location": "España", "year": "2001–2007" }
+    ],
+    "BOOKS": ["Spring in Action 5", "The Clean Coder", "Clean Architecture", "Effective Java (Java 9)"],
+    "COURSES": ["Angular 12", "Spring Framework 5", "Java Persistence — Hibernate and JPA", "Scrum Fundamental"]
+  },
+  "CHAT": {
+    "BADGE": "Powered by Claude AI",
+    "TITLE": "Chatea con mi CV",
+    "SUBTITLE": "Soy una IA entrenada con la experiencia y proyectos de Carlos Esteban Peña. Pregúntame lo que quieras sobre su perfil.",
+    "WELCOME_TITLE": "¡Hola! Soy el asistente de Carlos Esteban Peña.",
+    "WELCOME_DESC": "Puedes preguntarme sobre su experiencia, proyectos, habilidades o cualquier cosa de su perfil profesional.",
+    "SUGGESTIONS": [
+      "¿Cuál es tu experiencia con Angular?",
+      "¿Qué tecnologías de IA usas?",
+      "¿Cuántos años de experiencia tienes?",
+      "¿Con qué empresas has trabajado?"
+    ],
+    "INPUT_PLACEHOLDER": "Pregunta sobre experiencia, proyectos, habilidades...",
+    "BTN_SEND": "Enviar",
+    "DISCLAIMER": "Las respuestas son generadas por IA y pueden no ser 100% precisas.",
+    "CONTACT_LINK": "Contactar en LinkedIn →",
+    "ERROR_MSG": "Lo siento, el servicio de chat no está disponible en este momento. Puedes contactar a Carlos directamente en LinkedIn: linkedin.com/in/carlos-esteban-pena"
+  }
+}
