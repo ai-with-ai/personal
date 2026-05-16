@@ -112,7 +112,7 @@ interface EducationItem {
             </a>
             <a href="https://www.statsforbetting.com" target="_blank" rel="noopener noreferrer"
                class="flex items-center gap-2 text-slate-400 hover:text-primary-light transition-colors">
-              <img src="/images/sfb_icon.webp" alt="" aria-hidden="true" class="w-[18px] h-[18px] object-contain shrink-0" loading="lazy" />
+              <img src="/images/worldball_icono_200.webp" alt="" aria-hidden="true" class="w-[18px] h-[18px] object-contain shrink-0" loading="lazy" />
               StatsForBetting.com
             </a>
             <a href="/cv.pdf" download
@@ -425,6 +425,7 @@ export class CvComponent implements OnInit {
 
   companyImage(company: string): string {
     const c = company.toLowerCase();
+    if (c.includes('stats') || c.includes('betting')) return '/images/worldball_icono_200.webp';
     if (c.includes('mco') || c.includes('compliance')) return '/images/MCO_Logo_outlined_white.webp';
     return '';
   }

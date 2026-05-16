@@ -26,7 +26,7 @@ for (const lang of LANGS) {
     const raw = fs.readFileSync(path.join(langDir, file), 'utf-8');
     const { data, content } = matter(raw);
     const slug = file.replace(/^\d{4}-\d{2}-\d{2}-/, '').replace('.md', '');
-    return { slug, ...data, html: marked(content) };
+    return { slug, ...data, html: marked(content, { breaks: true }) };
   }).filter(p => p.published)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 

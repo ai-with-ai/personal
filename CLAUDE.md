@@ -25,6 +25,7 @@ Modern personal portfolio as a professional showcase. Features: CV interactivo, 
 - **claude-api-portfolio** — Claude API: CV chat (RAG), semantic search, blog AI assistant
 - **gsap-animations-angular** — Premium GSAP animations: hero, scroll reveals, page transitions
 - **mdx-blog-angular** — Git-based blog with .md files, build-time parsing, RSS
+- **pino-logger** — Pino structured logging for Express: setup, log levels, field conventions, mandatory checklist for every new implementation
 
 ### Base Skills
 - **angular-best-practices** — Angular coding standards and patterns (Signals, OnPush, @defer)

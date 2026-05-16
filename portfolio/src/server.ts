@@ -1,4 +1,8 @@
 import 'dotenv/config';
+// Allow corporate proxy certificates in dev (TLS verification disabled for outbound fetch)
+if (process.env['NODE_ENV'] !== 'production') {
+  process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
+}
 import {
   AngularNodeAppEngine,
   createNodeRequestHandler,
@@ -7,8 +11,49 @@ import {
 } from '@angular/ssr/node';
 import express from 'express';
 import { join } from 'node:path';
+import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
+import { execSync } from 'node:child_process';
 import { createHmac, timingSafeEqual, createHash } from 'node:crypto';
 import Anthropic from '@anthropic-ai/sdk';
+import pino from 'pino';
+import pretty from 'pino-pretty';
+import { Writable } from 'node:stream';
+
+// ── Structured logger ─────────────────────────────────────────────────────────
+
+interface LogEntry { level: number; time: number; module?: string; msg: string; [k: string]: unknown }
+
+const LOG_BUFFER_SIZE = 500;
+const logBuffer: LogEntry[] = [];
+
+const bufferSink = new Writable({
+  write(chunk: Buffer, _enc: BufferEncoding, cb: () => void) {
+    try {
+      const line = chunk.toString().trim();
+      if (line) {
+        const entry = JSON.parse(line) as LogEntry;
+        logBuffer.push(entry);
+        if (logBuffer.length > LOG_BUFFER_SIZE) logBuffer.shift();
+      }
+    } catch { /* ignore malformed lines */ }
+    cb();
+  },
+});
+
+const isDev = process.env['NODE_ENV'] !== 'production';
+const logLevel = process.env['LOG_LEVEL'] ?? (isDev ? 'debug' : 'info');
+
+const logger = pino(
+  { level: logLevel },
+  pino.multistream([
+    { stream: isDev ? pretty({ colorize: true, translateTime: 'SYS:HH:MM:ss', ignore: 'pid,hostname', sync: true }) : process.stdout, level: logLevel as pino.Level },
+    { stream: bufferSink, level: 'trace' },
+  ]),
+);
+
+const authLog = logger.child({ module: 'auth' });
+const blogLog = logger.child({ module: 'blog' });
+const chatLog = logger.child({ module: 'chat' });
 
 // ── Auth helpers ──────────────────────────────────────────────────────────────
 
@@ -154,6 +199,7 @@ app.post('/api/auth/login', (req, res) => {
   const ip = (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0].trim() ?? req.socket.remoteAddress ?? 'unknown';
 
   if (!checkRateLimit(ip)) {
+    authLog.warn({ ip }, 'Rate limit exceeded on login');
     res.status(429).json({ error: 'Too many attempts. Try again later.' });
     return;
   }
@@ -170,11 +216,13 @@ app.post('/api/auth/login', (req, res) => {
   const passMatch = incomingPassHash.length === storedPassHash.length && timingSafeEqual(incomingPassHash, storedPassHash);
 
   if (!userMatch || !passMatch) {
+    authLog.warn({ ip, username }, 'Login failed — invalid credentials');
     res.status(401).json({ error: 'Invalid credentials' });
     return;
   }
 
   const token = signToken({ sub: username, exp: Date.now() + 8 * 60 * 60 * 1000 });
+  authLog.info({ ip, username }, 'Login successful');
   res.json({ token });
 });
 
@@ -182,6 +230,174 @@ app.get('/api/auth/verify', (req, res) => {
   const auth  = req.headers['authorization'] ?? '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
   res.json({ valid: verifyToken(token) });
+});
+
+// ── Blog edit endpoints ───────────────────────────────────────────────────────
+
+function findBlogFile(lang: string, slug: string): string | null {
+  const dir = join(process.cwd(), 'content', 'blog', lang);
+  if (!existsSync(dir)) return null;
+  const file = readdirSync(dir).find(f => {
+    const m = f.match(/^\d{4}-\d{2}-\d{2}-(.+)\.md$/);
+    return m?.[1] === slug;
+  });
+  return file ? join(dir, file) : null;
+}
+
+function splitFrontMatter(content: string): { frontmatter: string; body: string } {
+  const m = content.match(/^(---\n[\s\S]*?\n---\n?)([\s\S]*)$/);
+  return m ? { frontmatter: m[1], body: m[2] } : { frontmatter: '', body: content };
+}
+
+app.get('/api/blog/raw', (req, res) => {
+  const token = (req.headers['authorization'] ?? '').replace('Bearer ', '');
+  if (!verifyToken(token)) { blogLog.warn({}, 'Unauthorized raw read attempt'); res.status(401).json({ error: 'Unauthorized' }); return; }
+
+  const { slug, lang } = req.query as { slug?: string; lang?: string };
+  if (!slug || !lang) { res.status(400).json({ error: 'Missing slug or lang' }); return; }
+
+  const filePath = findBlogFile(lang, slug);
+  if (!filePath) { blogLog.warn({ slug, lang }, 'Raw read — post not found'); res.status(404).json({ error: 'Post not found' }); return; }
+
+  blogLog.debug({ slug, lang }, 'Raw markdown read');
+  const { body } = splitFrontMatter(readFileSync(filePath, 'utf-8'));
+  res.json({ markdown: body });
+});
+
+app.put('/api/blog/save', (req, res) => {
+  const token = (req.headers['authorization'] ?? '').replace('Bearer ', '');
+  if (!verifyToken(token)) { blogLog.warn({}, 'Unauthorized save attempt'); res.status(401).json({ error: 'Unauthorized' }); return; }
+
+  const { slug, lang, markdown, skipRebuild } = req.body as { slug?: string; lang?: string; markdown?: string; skipRebuild?: boolean };
+  if (!slug || !lang || markdown === undefined) {
+    res.status(400).json({ error: 'Missing slug, lang or markdown' }); return;
+  }
+
+  const filePath = findBlogFile(lang, slug);
+  if (!filePath) { blogLog.warn({ slug, lang }, 'Save — post not found'); res.status(404).json({ error: 'Post not found' }); return; }
+
+  const { frontmatter } = splitFrontMatter(readFileSync(filePath, 'utf-8'));
+  writeFileSync(filePath, frontmatter + markdown, 'utf-8');
+
+  if (skipRebuild) {
+    blogLog.info({ slug, lang }, 'Blog post saved (rebuild skipped)');
+    res.json({ ok: true });
+    return;
+  }
+
+  try {
+    execSync('node scripts/build-blog.mjs', { cwd: process.cwd(), stdio: 'pipe' });
+    blogLog.info({ slug, lang }, 'Blog post saved and rebuilt');
+  } catch (e) {
+    blogLog.error({ err: e, slug, lang }, 'Blog rebuild failed');
+    res.status(500).json({ error: 'Saved but rebuild failed' }); return;
+  }
+  res.json({ ok: true });
+});
+
+// ── Blog translate endpoint ───────────────────────────────────────────────────
+
+app.post('/api/blog/translate', async (req, res) => {
+  const token = (req.headers['authorization'] ?? '').replace('Bearer ', '');
+  if (!verifyToken(token)) { blogLog.warn({}, 'Unauthorized translate attempt'); res.status(401).json({ error: 'Unauthorized' }); return; }
+
+  const { markdown, fromLang, toLang } = req.body as { markdown?: string; fromLang?: string; toLang?: string };
+  if (!markdown || !fromLang || !toLang) {
+    res.status(400).json({ error: 'Missing markdown, fromLang or toLang' }); return;
+  }
+
+  const apiKey = process.env['ANTHROPIC_API_KEY'];
+  if (!apiKey) { res.status(500).json({ error: 'API key not configured' }); return; }
+
+  const langNames: Record<string, string> = { en: 'English', es: 'Spanish' };
+  const client = new Anthropic({ apiKey });
+  const t0 = Date.now();
+
+  try {
+    const response = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 8096,
+      system: `You are a professional technical translator. Translate the provided Markdown blog post from ${langNames[fromLang] ?? fromLang} to ${langNames[toLang] ?? toLang}.
+Rules:
+- Preserve ALL Markdown formatting exactly (headings, bold, italic, code blocks, links, tables, lists, blockquotes, hr).
+- NEVER translate text inside fenced code blocks (\`\`\`...\`\`\`) or inline code (\`...\`).
+- NEVER translate frontmatter keys; only translate frontmatter values that are human-readable text (title, description, etc.).
+- Return ONLY the translated Markdown — no explanations, no preamble, no trailing notes.`,
+      messages: [{ role: 'user', content: markdown }],
+    });
+
+    const translated = response.content[0].type === 'text' ? response.content[0].text : '';
+    blogLog.info({ fromLang, toLang, durationMs: Date.now() - t0 }, 'Blog translation completed');
+    res.json({ markdown: translated });
+  } catch (err) {
+    blogLog.error({ err, durationMs: Date.now() - t0 }, 'Translation API error');
+    res.status(500).json({ error: 'Translation failed' });
+  }
+});
+
+// ── Blog translate-diff endpoint (translate only changed paragraphs) ──────────
+
+app.post('/api/blog/translate-diff', async (req, res) => {
+  const token = (req.headers['authorization'] ?? '').replace('Bearer ', '');
+  if (!verifyToken(token)) { blogLog.warn({}, 'Unauthorized translate-diff attempt'); res.status(401).json({ error: 'Unauthorized' }); return; }
+
+  const { slug, fromLang, toLang, currentMarkdown, originalMarkdown: origMd } =
+    req.body as { slug?: string; fromLang?: string; toLang?: string; currentMarkdown?: string; originalMarkdown?: string };
+
+  if (!slug || !fromLang || !toLang || !currentMarkdown || !origMd) {
+    res.status(400).json({ error: 'Missing required fields' }); return;
+  }
+
+  const apiKey = process.env['ANTHROPIC_API_KEY'];
+  if (!apiKey) { res.status(500).json({ error: 'API key not configured' }); return; }
+
+  const otherFilePath = findBlogFile(toLang, slug);
+  if (!otherFilePath) { res.status(404).json({ error: `${toLang} version not found` }); return; }
+  const { body: otherBody } = splitFrontMatter(readFileSync(otherFilePath, 'utf-8'));
+
+  // Identify blocks that changed between the original load and the current save
+  const origBlocks = origMd.split(/\n\n+/);
+  const currBlocks = currentMarkdown.split(/\n\n+/);
+  const changedBlocks: string[] = [];
+  const maxLen = Math.max(origBlocks.length, currBlocks.length);
+  for (let i = 0; i < maxLen; i++) {
+    const orig = (origBlocks[i] ?? '').trim();
+    const curr = (currBlocks[i] ?? '').trim();
+    if (orig !== curr && curr) changedBlocks.push(curr);
+  }
+
+  if (changedBlocks.length === 0) {
+    blogLog.info({ slug, fromLang, toLang }, 'translate-diff: no changes detected');
+    res.json({ markdown: otherBody });
+    return;
+  }
+
+  const langNames: Record<string, string> = { en: 'English', es: 'Spanish' };
+  const client = new Anthropic({ apiKey });
+  const t0 = Date.now();
+
+  try {
+    const response = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 8096,
+      system: `You are a professional technical translator. You will receive sections of a blog post that were modified in ${langNames[fromLang] ?? fromLang}. Your job is to apply the equivalent changes to the ${langNames[toLang] ?? toLang} version, translating only the modified sections and leaving everything else untouched.
+Rules:
+- Preserve ALL Markdown formatting exactly (headings, bold, italic, code blocks, links, tables, lists).
+- NEVER translate text inside fenced code blocks (\`\`\`...\`\`\`) or inline code (\`...\`).
+- Return ONLY the updated ${langNames[toLang] ?? toLang} Markdown — no explanations, no preamble.`,
+      messages: [{
+        role: 'user',
+        content: `These sections were modified in the ${langNames[fromLang] ?? fromLang} version:\n\n${changedBlocks.join('\n\n---\n\n')}\n\n===\n\nApply the equivalent changes to this ${langNames[toLang] ?? toLang} version (translate the modified sections, keep the rest):\n\n${otherBody}`,
+      }],
+    });
+
+    const merged = response.content[0].type === 'text' ? response.content[0].text.trim() : otherBody;
+    blogLog.info({ slug, fromLang, toLang, changedCount: changedBlocks.length, durationMs: Date.now() - t0 }, 'translate-diff completed');
+    res.json({ markdown: merged });
+  } catch (err) {
+    blogLog.error({ err, durationMs: Date.now() - t0 }, 'translate-diff API error');
+    res.status(500).json({ error: 'Translation failed' });
+  }
 });
 
 // ── Chat endpoint ─────────────────────────────────────────────────────────────
@@ -224,6 +440,7 @@ Reglas importantes:
     { role: 'user', content: message },
   ];
 
+  const t0 = Date.now();
   try {
     const response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
@@ -233,12 +450,32 @@ Reglas importantes:
     });
 
     const text = response.content[0].type === 'text' ? response.content[0].text : '';
+    chatLog.info({ messageLength: message.length, historyLength: history.length, durationMs: Date.now() - t0 }, 'Chat response sent');
     res.json({ response: text });
   } catch (err) {
-    console.error('Claude API error:', err);
+    chatLog.error({ err, durationMs: Date.now() - t0 }, 'Claude API error');
     res.status(500).json({ error: 'Error calling Claude API' });
   }
 });
+
+// ── Log endpoints (auth-gated) ────────────────────────────────────────────────
+
+app.get('/api/logs', (req, res) => {
+  const token = (req.headers['authorization'] ?? '').replace('Bearer ', '');
+  if (!verifyToken(token)) { res.status(401).json({ error: 'Unauthorized' }); return; }
+  const limit = Math.min(parseInt((req.query['limit'] as string) ?? '300', 10), LOG_BUFFER_SIZE);
+  res.json({ logs: logBuffer.slice(-limit) });
+});
+
+app.delete('/api/logs', (req, res) => {
+  const token = (req.headers['authorization'] ?? '').replace('Bearer ', '');
+  if (!verifyToken(token)) { res.status(401).json({ error: 'Unauthorized' }); return; }
+  logBuffer.length = 0;
+  logger.info({}, 'Log buffer cleared by admin');
+  res.json({ ok: true });
+});
+
+// ── Static + Angular SSR ──────────────────────────────────────────────────────
 
 app.use(
   express.static(browserDistFolder, {
@@ -261,7 +498,7 @@ if (isMainModule(import.meta.url) || process.env['pm_id']) {
   const port = process.env['PORT'] || 4000;
   app.listen(port, (error) => {
     if (error) throw error;
-    console.log(`Node Express server listening on http://localhost:${port}`);
+    logger.info({ port, env: process.env['NODE_ENV'] ?? 'development' }, `Server listening on http://localhost:${port}`);
   });
 }
 

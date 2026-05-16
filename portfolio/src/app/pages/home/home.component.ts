@@ -16,7 +16,7 @@ import { ParticleBgComponent } from '../../components/particle-bg/particle-bg.co
       <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/10 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
       <app-particle-bg></app-particle-bg>
 
-      <div #heroContent class="relative z-10 text-center max-w-4xl mx-auto opacity-0">
+      <div id="heroContent" #heroContent class="relative z-10 text-center max-w-4xl mx-auto backdrop-blur-sm rounded-2xl px-8 py-10 bg-[#0e142a] shadow-[0_0_30px_rgba(19,24,42,0.8)]">
         <p class="text-primary-light font-mono text-sm mb-4 tracking-widest uppercase">
           {{ 'HOME.BADGE' | translate }}
         </p>

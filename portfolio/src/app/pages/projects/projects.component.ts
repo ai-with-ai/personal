@@ -47,7 +47,13 @@ interface Project {
                   }
                 </div>
               </div>
-              <h2 class="text-xl font-bold text-white mb-2">{{ project.titleKey | translate }}</h2>
+              <div class="flex items-center gap-2.5 mb-2">
+                @if (project.image) {
+                  <img [src]="project.image" [alt]="project.titleKey | translate"
+                       class="w-7 h-7 object-contain shrink-0" loading="lazy" />
+                }
+                <h2 class="text-xl font-bold text-white">{{ project.titleKey | translate }}</h2>
+              </div>
               <p class="text-slate-400 text-sm mb-5 leading-relaxed">{{ project.descKey | translate }}</p>
               <div class="flex flex-wrap gap-2">
                 @for (tag of project.tags; track tag) {
@@ -98,6 +104,7 @@ export class ProjectsComponent {
       descKey: 'PROJECTS.ITEMS.STATS_DESC',
       tags: ['Spring 4 MVC', 'Spring Security', 'Hibernate', 'MySQL', 'jQuery', 'Bootstrap', 'Maven'],
       url: 'https://www.statsforbetting.com',
+      image: '/images/worldball_icono_200.webp',
       featured: true,
     },
     {

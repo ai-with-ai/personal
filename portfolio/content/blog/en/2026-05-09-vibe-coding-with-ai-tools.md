@@ -7,8 +7,11 @@ coverImage: "/images/blog/vibe-coding.webp"
 published: true
 readingTime: 9
 ---
-
 # Vibe Coding: programming with AI agents
+
+this is amazing
+
+but very amazing
 
 *Vibe coding* is not about writing code blindly and hoping for the best. It is about collaborating with an AI that understands your codebase, follows your rules, executes real tools and learns the context of your project. Tools like **Claude Code**, **Gemini CLI**, **Cursor** and **OpenCode** are turning that vision into reality today.
 
@@ -16,13 +19,15 @@ This post explores the primitives that make that collaboration possible: agents,
 
 ---
 
-## What is vibe coding?
+# **What is vibe coding?**
 
 The term, popularised in 2025, describes a development style where the programmer states the intent — *"add JWT authentication to this API"*, *"refactor this service following DDD"* — and the AI agent makes decisions, reads files, runs commands and produces working code.
 
 It is not advanced autocomplete. It is delegation with context.
 
 ---
+
+ 
 
 ## The main tools
 
@@ -277,15 +282,17 @@ Instead of pair programming with a human, you have a team of specialised agents 
 
 ## Which tool to choose?
 
-| | Claude Code | Gemini CLI | Cursor | OpenCode |
-|---|---|---|---|---|
-| **Context** | 200k tokens | 1M tokens | Variable | Variable |
+|  | Claude Code | Gemini CLI | Cursor | OpenCode |
+| --- | --- | --- | --- | --- |
+| **Context** | 1M | 1M | Variable | Variable |
 | **Agents** | ✅ Native | ✅ Native | ✅ Composer | ✅ |
 | **MCP** | ✅ | ✅ | ✅ | ✅ |
 | **Worktrees** | ✅ | ❌ | ❌ | ❌ |
-| **Config layers** | ✅ 3 layers | Limited | ✅ Partial | ✅ |
+| **Config layers** | ✅ | 3 layersLimited | ✅ Partial | ✅ |
 | **Open Source** | ❌ | ❌ | ❌ | ✅ |
-| **Best for** | Teams, complex projects | Massive context | IDE-first | Full privacy |
+| **Best for** | Best autonomous coding agent / long-running refactors | Massive context + open source + free tier | Best IDE-native experience + multi-model workflow | Privacy/self-hosted/open ecosystem |
+
+ 
 
 There is no universal answer. Claude Code shines in projects with complex architecture and teams that want to standardise how AI works. Gemini CLI wins when the entire repo context fits in a single prompt. Cursor is the best experience if you do not want to leave the IDE. OpenCode if privacy is non-negotiable.
 

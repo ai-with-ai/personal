@@ -35,4 +35,13 @@ export class BlogService {
 
   getAll() { return this.posts(); }
   getBySlug(slug: string) { return this.posts().find(p => p.slug === slug); }
+
+  reload() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const lang = this.langSvc.current();
+    this.http.get<BlogPost[]>(`/blog/${lang}.json`, { headers: { 'Cache-Control': 'no-cache' } }).subscribe({
+      next: posts => this.posts.set(posts),
+      error: () => {},
+    });
+  }
 }
