@@ -128,7 +128,7 @@ const CV_CONTEXT = {
         'Coordinate sprints, retrospective meetings, and daily stand-ups as Scrum Master',
         'Coach team members in Agile methodology and best practices',
         'Estimate development time for all tasks and work with PO to handle backlogs',
-        'Development using Java 8, Oracle, Spring, Bootstrap 3, Maven 3, Angular 12',
+        'Development using Java 21, Oracle, Spring, Bootstrap 3, Maven 3, Angular 12',
         'Build and maintain REST web services that secure and forward requests to other services',
         'Mentoring new developers and writing documentation and coding guidelines',
         'Testing with JUnit, Mockito, and Selenium',
@@ -188,7 +188,7 @@ const CV_CONTEXT = {
     { degree: 'Exchange Year — Computer Science', institution: 'Polytechnic University Leonardo da Vinci', location: 'Milan, Italy', year: '2007–2008' },
     { degree: 'Computer Science Engineering (5-year degree)', institution: 'University of Malaga', location: 'Spain', year: '2001–2007' },
   ],
-  books: ['Spring in Action 5', 'The Clean Coder', 'Clean Architecture', 'Effective Java (Java 9)'],
+  books: ['Spring in Action 5', 'The Clean Coder', 'Clean Architecture', 'Effective Java'],
   courses: ['Angular 12', 'Spring Framework 5', 'Java Persistence — Hibernate and JPA', 'Scrum Fundamental'],
   otherInfo: 'Final Degree Project: Mashup web application — a music search engine using external APIs (JSP, Struts, SAX, EJB 3.0, JavaScript, AJAX, RESTful services). Driver licence holder.',
 };
@@ -268,7 +268,7 @@ app.put('/api/blog/save', (req, res) => {
   const token = (req.headers['authorization'] ?? '').replace('Bearer ', '');
   if (!verifyToken(token)) { blogLog.warn({}, 'Unauthorized save attempt'); res.status(401).json({ error: 'Unauthorized' }); return; }
 
-  const { slug, lang, markdown, skipRebuild } = req.body as { slug?: string; lang?: string; markdown?: string; skipRebuild?: boolean };
+  const { slug, lang, markdown, skipRebuild, title } = req.body as { slug?: string; lang?: string; markdown?: string; skipRebuild?: boolean; title?: string };
   if (!slug || !lang || markdown === undefined) {
     res.status(400).json({ error: 'Missing slug, lang or markdown' }); return;
   }
@@ -276,7 +276,11 @@ app.put('/api/blog/save', (req, res) => {
   const filePath = findBlogFile(lang, slug);
   if (!filePath) { blogLog.warn({ slug, lang }, 'Save — post not found'); res.status(404).json({ error: 'Post not found' }); return; }
 
-  const { frontmatter } = splitFrontMatter(readFileSync(filePath, 'utf-8'));
+  let { frontmatter } = splitFrontMatter(readFileSync(filePath, 'utf-8'));
+  if (title !== undefined) {
+    const escaped = title.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    frontmatter = frontmatter.replace(/^(title:\s*)["']?.*?["']?\s*$/m, `$1"${escaped}"`);
+  }
   writeFileSync(filePath, frontmatter + markdown, 'utf-8');
 
   if (skipRebuild) {
@@ -293,6 +297,35 @@ app.put('/api/blog/save', (req, res) => {
     res.status(500).json({ error: 'Saved but rebuild failed' }); return;
   }
   res.json({ ok: true });
+});
+
+// ── Blog new post endpoint ────────────────────────────────────────────────────
+
+app.post('/api/blog/new', (req, res) => {
+  const token = (req.headers['authorization'] ?? '').replace('Bearer ', '');
+  if (!verifyToken(token)) { blogLog.warn({}, 'Unauthorized new-post attempt'); res.status(401).json({ error: 'Unauthorized' }); return; }
+
+  const dateStr = new Date().toISOString().slice(0, 10);
+  let slug = 'new-post';
+  let n = 1;
+  while (findBlogFile('en', slug) || findBlogFile('es', slug)) slug = `new-post-${++n}`;
+
+  const filename = `${dateStr}-${slug}.md`;
+  const template = `---\ntitle: "New Post"\ndate: "${dateStr}"\ntags: []\nexcerpt: ""\ncoverImage: ""\npublished: false\nreadingTime: 1\n---\n# New Post\n\nStart writing here.\n`;
+
+  for (const lang of ['en', 'es']) {
+    writeFileSync(join(process.cwd(), 'content', 'blog', lang, filename), template, 'utf-8');
+  }
+
+  try {
+    execSync('node scripts/build-blog.mjs', { cwd: process.cwd(), stdio: 'pipe' });
+    blogLog.info({ slug, filename }, 'New blog post created');
+  } catch (e) {
+    blogLog.error({ err: e }, 'Blog rebuild failed after new post');
+    res.status(500).json({ error: 'Post created but rebuild failed' }); return;
+  }
+
+  res.json({ slug });
 });
 
 // ── Blog translate endpoint ───────────────────────────────────────────────────
